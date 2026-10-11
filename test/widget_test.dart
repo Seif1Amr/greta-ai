@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:greta_ai_german/core/utils/text_similarity.dart';
 import 'package:greta_ai_german/data/active_recall_catalog.dart';
 import 'package:greta_ai_german/data/german_curriculum_catalog.dart';
+import 'package:greta_ai_german/data/grammar_mastery_catalog.dart';
+import 'package:greta_ai_german/models/grammar_mastery_model.dart';
 
 void main() {
   group('Greta AI Core Verification Tests', () {
@@ -56,6 +58,30 @@ void main() {
       expect(phrase.phoneticIpa.isNotEmpty, true);
       expect(phrase.phoneticGuide.isNotEmpty, true);
       expect(phrase.englishTranslation.isNotEmpty, true);
+    });
+
+    test('GrammarMasteryCatalog contains all 4 high-friction German studios', () {
+      final studios = GrammarMasteryCatalog.studios;
+      expect(studios.length, 4);
+
+      final genus = studios.firstWhere((s) => s.id == GrammarTopicId.genus);
+      expect(genus.levels.length, 4);
+      expect(genus.keyRules.isNotEmpty, true);
+
+      final kasus = studios.firstWhere((s) => s.id == GrammarTopicId.kasus);
+      expect(kasus.levels.length, 4);
+
+      final verbs = studios.firstWhere((s) => s.id == GrammarTopicId.trennbareVerben);
+      expect(verbs.levels.length, 4);
+
+      final satzbau = studios.firstWhere((s) => s.id == GrammarTopicId.satzbau);
+      expect(satzbau.levels.length, 4);
+
+      // Test level 1 of genus
+      final genusL1 = genus.levels.first;
+      expect(genusL1.exercises.length, 3);
+      expect(genusL1.exercises.first.options.length, 4);
+      expect(genusL1.exercises.first.correctOptionIndex, inInclusiveRange(0, 3));
     });
   });
 }

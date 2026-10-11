@@ -12,6 +12,7 @@ import '../services/hearts_wallet_service.dart';
 import '../widgets/active_recall_bridge_modal.dart';
 import '../widgets/credit_badge.dart';
 import '../widgets/phonetic_guide_pill.dart';
+import 'grammar_mastery/grammar_mastery_hub_screen.dart';
 
 class PracticeStudioScreen extends StatefulWidget {
   const PracticeStudioScreen({super.key});
@@ -243,6 +244,118 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                           size: 16,
                         ),
                       ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // German Grammar Mastery Studios Banner
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const GrammarMasteryHubScreen(),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(18),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceElevated,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: AppColors.cyanGlow.withValues(alpha: 0.4),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.cyanGlow.withValues(alpha: 0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF00D2FF), Color(0xFF6366F1)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.school_rounded,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Text(
+                                      loc.languageCode == 'ar'
+                                          ? 'استوديوهات القواعد المتقدمة'
+                                          : (loc.languageCode == 'de'
+                                              ? 'Grammatik-Meisterstudios'
+                                              : 'Grammar Mastery Studios'),
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w800,
+                                        color: AppColors.textHighEmphasis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.cyanGlow
+                                            .withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: const Text(
+                                        '4 STUDIOS',
+                                        style: TextStyle(
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.cyanGlow,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  loc.languageCode == 'ar'
+                                      ? 'der/die/das • 4 حالات • أفعال منفصلة • Satzbau'
+                                      : 'der/die/das • 4 Fälle • Verben • Kausalsätze',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textMediumEmphasis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            color: AppColors.cyanGlow,
+                            size: 16,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

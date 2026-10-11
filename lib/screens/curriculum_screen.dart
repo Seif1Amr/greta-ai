@@ -7,6 +7,7 @@ import '../services/hearts_wallet_service.dart';
 import '../widgets/active_recall_bridge_modal.dart';
 import '../widgets/credit_badge.dart';
 import '../widgets/fast_scroll_tier_indexer.dart';
+import 'grammar_mastery/grammar_mastery_hub_screen.dart';
 import 'level_exercise_screen.dart';
 
 class CurriculumScreen extends StatefulWidget {
@@ -242,14 +243,22 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
             SizedBox(width: 14),
           ],
         ),
-        body: Stack(
+        body: Column(
           children: [
-            // 600-Level ListView with Fixed Extent for Instant 120fps Scrolling
-            ListView.builder(
-              controller: _scrollController,
-              itemCount: _summaries.length,
-              itemExtent: _itemExtent,
-              padding: const EdgeInsets.fromLTRB(16, 12, 60, 24),
+            // Grammar Mastery Studios Access Banner
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+              child: _buildGrammarStudiosBanner(context, loc),
+            ),
+            Expanded(
+              child: Stack(
+                children: [
+                  // 600-Level ListView with Fixed Extent for Instant 120fps Scrolling
+                  ListView.builder(
+                    controller: _scrollController,
+                    itemCount: _summaries.length,
+                    itemExtent: _itemExtent,
+                    padding: const EdgeInsets.fromLTRB(16, 8, 60, 24),
               itemBuilder: (context, index) {
                 final summary = _summaries[index];
                 final isUnlocked = wallet.isLevelUnlocked(summary.levelNumber);
@@ -413,6 +422,141 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    ],
+  ),
+),
+);
+  }
+
+  Widget _buildGrammarStudiosBanner(BuildContext context, LocaleProvider loc) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const GrammarMasteryHubScreen(),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: AppColors.cyanGlow.withValues(alpha: 0.5),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.cyanGlow.withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF00D2FF), Color(0xFF3B82F6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.auto_stories_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          loc.languageCode == 'ar'
+                              ? 'استوديوهات القواعد الصعبة'
+                              : (loc.languageCode == 'de'
+                                  ? 'Deutsche Grammatik-Studios'
+                                  : 'German Grammar Mastery'),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textHighEmphasis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.heartRed.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'PRO',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.heartRed,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      loc.languageCode == 'ar'
+                          ? 'der/die/das • 4 حالات الإعراب • الأفعال المنفصلة • تركيب الجملة'
+                          : 'der/die/das • 4 Fälle • Trennbare Verben • Satzbau',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.cyanSoft,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.cyanGlow.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: AppColors.cyanGlow.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  loc.languageCode == 'ar' ? 'ابدأ' : 'Öffnen',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.cyanGlow,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

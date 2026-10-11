@@ -16,6 +16,13 @@ class HeartsWalletService extends ChangeNotifier {
   late double _speechSpeed;
   final Set<int> _unlockedLevels = {1};
   final Set<int> _completedLevels = {};
+  final Set<String> _unlockedGrammarLevels = {
+    'genus_1',
+    'kasus_1',
+    'trennbare_verben_1',
+    'satzbau_1',
+  };
+  final Set<String> _completedGrammarLevels = {};
   int _activeRecallSuccessCount = 0;
 
   int get hearts => _hearts;
@@ -28,11 +35,18 @@ class HeartsWalletService extends ChangeNotifier {
   double get speechSpeed => _speechSpeed;
   Set<int> get unlockedLevels => Set.unmodifiable(_unlockedLevels);
   Set<int> get completedLevels => Set.unmodifiable(_completedLevels);
+  Set<String> get unlockedGrammarLevels => Set.unmodifiable(_unlockedGrammarLevels);
+  Set<String> get completedGrammarLevels => Set.unmodifiable(_completedGrammarLevels);
   int get activeRecallSuccessCount => _activeRecallSuccessCount;
 
   bool get hasHearts => _hearts >= AppConstants.heartCostPerSpeakingTurn;
   bool isLevelUnlocked(int level) => _unlockedLevels.contains(level);
   bool isLevelCompleted(int level) => _completedLevels.contains(level);
+
+  bool isGrammarLevelUnlocked(String key, int level) =>
+      _unlockedGrammarLevels.contains('${key}_$level');
+  bool isGrammarLevelCompleted(String key, int level) =>
+      _completedGrammarLevels.contains('${key}_$level');
 
   HeartsWalletService() {
     _loadState();
@@ -87,6 +101,22 @@ class HeartsWalletService extends ChangeNotifier {
         if (l is int) _completedLevels.add(l);
       }
     }
+
+    final rawGrammarUnlocked =
+        _storage.read<List<dynamic>>('greta_unlocked_grammar_levels');
+    if (rawGrammarUnlocked != null) {
+      for (final g in rawGrammarUnlocked) {
+        if (g is String) _unlockedGrammarLevels.add(g);
+      }
+    }
+
+    final rawGrammarCompleted =
+        _storage.read<List<dynamic>>('greta_completed_grammar_levels');
+    if (rawGrammarCompleted != null) {
+      for (final g in rawGrammarCompleted) {
+        if (g is String) _completedGrammarLevels.add(g);
+      }
+    }
   }
 
   void _saveState() {
@@ -116,6 +146,14 @@ class HeartsWalletService extends ChangeNotifier {
     _storage.write(
       AppConstants.storageKeyCompletedLevels,
       _completedLevels.toList(),
+    );
+    _storage.write(
+      'greta_unlocked_grammar_levels',
+      _unlockedGrammarLevels.toList(),
+    );
+    _storage.write(
+      'greta_completed_grammar_levels',
+      _completedGrammarLevels.toList(),
     );
   }
 
@@ -199,6 +237,25 @@ class HeartsWalletService extends ChangeNotifier {
     if (level < 600) {
       _unlockedLevels.add(level + 1);
     }
+    _saveState();
+    notifyListeners();
+  }
+
+  /// Unlocks a grammar mastery level in a topic.
+  void unlockGrammarLevel(String topicKey, int level) {
+    final id = '${topicKey}_$level';
+    if (!_unlockedGrammarLevels.contains(id)) {
+      _unlockedGrammarLevels.add(id);
+      _saveState();
+      notifyListeners();
+    }
+  }
+
+  /// Marks a grammar mastery level as completed and unlocks the next level in that topic.
+  void completeGrammarLevel(String topicKey, int level) {
+    final id = '${topicKey}_$level';
+    _completedGrammarLevels.add(id);
+    _unlockedGrammarLevels.add('${topicKey}_${level + 1}');
     _saveState();
     notifyListeners();
   }
