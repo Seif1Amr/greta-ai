@@ -11,6 +11,7 @@ import '../services/hearts_wallet_service.dart';
 import '../widgets/animated_greta_avatar.dart';
 import '../widgets/credit_badge.dart';
 import '../widgets/glowing_voice_orb.dart';
+import '../widgets/greta_wide_hero_stage.dart';
 import '../widgets/refill_hearts_modal.dart';
 
 class SalonConversationScreen extends StatefulWidget {
@@ -27,6 +28,9 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
   final GeminiGermanService _geminiService = GeminiGermanService();
 
   bool _isAiThinking = false;
+  bool _isSubmittingTurn = false;
+  String? _lastSubmittedText;
+  DateTime? _lastSubmitTime;
   GretaAvatarState _avatarState = GretaAvatarState.neutral;
 
   GermanTtsService? _ttsService;
@@ -87,10 +91,15 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
       return;
     }
 
-    // If already listening, stop and send
+    // Ignore tap if AI is actively processing or thinking
+    if (_isAiThinking || _isSubmittingTurn) {
+      return;
+    }
+
+    // If already listening, stop capture, cancel listening to avoid duplicate callbacks, and submit
     if (speech.isListening) {
-      await speech.stopListening();
       final captured = speech.currentWords.trim();
+      await speech.cancelListening();
       if (captured.isNotEmpty) {
         _submitUserTurn(captured);
       } else {
@@ -130,72 +139,117 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
   }
 
   Future<void> _submitUserTurn(String text) async {
-    final wallet = context.read<HeartsWalletService>();
-    final tts = context.read<GermanTtsService>();
+    final cleanText = text.trim();
+    if (cleanText.isEmpty) return;
 
-    // Deduct 1 Heart for speaking turn
-    final deducted = wallet.deductSpeakingTurnHeart();
-    if (!deducted) {
-      if (mounted) RefillHeartsModal.show(context);
+    // Concurrency guard: ignore if already submitting or thinking
+    if (_isSubmittingTurn || _isAiThinking) {
+      debugPrint('[SalonConversation] Ignored duplicate turn submission: "$cleanText"');
       return;
     }
 
-    setState(() {
-      _messages.add(
-        ConversationTurn(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          germanText: text,
-          isUser: true,
-          timestamp: DateTime.now(),
-        ),
+    // Rapid duplicate debounce: ignore identical submissions within 2.5s
+    final now = DateTime.now();
+    if (_lastSubmittedText == cleanText &&
+        _lastSubmitTime != null &&
+        now.difference(_lastSubmitTime!).inMilliseconds < 2500) {
+      debugPrint('[SalonConversation] Ignored rapid duplicate phrase submission: "$cleanText"');
+      return;
+    }
+
+    _isSubmittingTurn = true;
+    _lastSubmittedText = cleanText;
+    _lastSubmitTime = now;
+
+    final speech = context.read<GermanSpeechService>();
+    final wallet = context.read<HeartsWalletService>();
+    final tts = context.read<GermanTtsService>();
+
+    // Immediately cancel listening to flush & kill any pending recognizer callbacks
+    try {
+      await speech.cancelListening();
+    } catch (_) {}
+
+    if (!mounted) {
+      _isSubmittingTurn = false;
+      return;
+    }
+
+    try {
+      // Deduct 1 Heart for speaking turn
+      final deducted = wallet.deductSpeakingTurnHeart();
+      if (!deducted) {
+        RefillHeartsModal.show(context);
+        return;
+      }
+
+      setState(() {
+        _messages.add(
+          ConversationTurn(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            germanText: cleanText,
+            isUser: true,
+            timestamp: DateTime.now(),
+          ),
+        );
+        _isAiThinking = true;
+        _avatarState = GretaAvatarState.thinking;
+      });
+      _scrollToBottom();
+
+      // Direct Gemini 2.0 Flash execution with fallbacks
+      final response = await _geminiService.generateGermanReply(
+        history: _messages,
+        userSpokenText: cleanText,
+        cefrLevel: wallet.cefrLevel,
+        learningGoal: wallet.learningGoal,
       );
-      _isAiThinking = true;
-      _avatarState = GretaAvatarState.thinking;
-    });
-    _scrollToBottom();
 
-    // Direct Gemini 2.0 Flash execution with fallbacks
-    final response = await _geminiService.generateGermanReply(
-      history: _messages,
-      userSpokenText: text,
-      cefrLevel: wallet.cefrLevel,
-      learningGoal: wallet.learningGoal,
-    );
+      if (!mounted) return;
 
-    if (!mounted) return;
+      setState(() {
+        _isAiThinking = false;
+        _messages.add(
+          ConversationTurn(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            germanText: response.speechText,
+            isUser: false,
+            timestamp: DateTime.now(),
+            correction: response.correction,
+            isFallback: response.isFallback,
+          ),
+        );
+        _avatarState = GretaAvatarState.speaking;
+      });
+      _scrollToBottom();
 
-    setState(() {
-      _isAiThinking = false;
-      _messages.add(
-        ConversationTurn(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          germanText: response.speechText,
-          isUser: false,
-          timestamp: DateTime.now(),
-          correction: response.correction,
-          isFallback: response.isFallback,
-        ),
+      // Speak AI response in calibrated female German voice
+      await tts.speak(
+        text: response.speechText,
+        onHaltMicrophone: () async {
+          await speech.cancelListening();
+        },
+        onComplete: () {
+          if (mounted) {
+            setState(() {
+              _avatarState = response.correction != null
+                  ? GretaAvatarState.neutral
+                  : GretaAvatarState.celebrating;
+            });
+          }
+        },
       );
-      _avatarState = GretaAvatarState.speaking;
-    });
-    _scrollToBottom();
-
-    // Speak AI response in calibrated female German voice
-    await tts.speak(
-      text: response.speechText,
-      onHaltMicrophone: () async {
-        await context.read<GermanSpeechService>().cancelListening();
-      },
-      onComplete: () {
-        if (mounted) {
-          setState(() {
-            _avatarState = response.correction != null
-                ? GretaAvatarState.neutral
-                : GretaAvatarState.celebrating;
-          });
-        }
-      },
-    );
+    } catch (e) {
+      debugPrint('[SalonConversation] Error during turn submission: $e');
+      if (mounted) {
+        setState(() {
+          _isAiThinking = false;
+          _avatarState = GretaAvatarState.neutral;
+        });
+      }
+    } finally {
+      _isSubmittingTurn = false;
+    }
   }
 
   Future<void> _speakTurnText(String text) async {
@@ -291,36 +345,19 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              // Greta Coach Stage with Reactive Avatar
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Column(
-                  children: [
-                    AnimatedGretaAvatar(
-                      state: _avatarState,
-                      size: 96,
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _isAiThinking
-                          ? loc.tr('greta_thinking')
-                          : (isSpeaking
-                              ? loc.tr('greta_speaking')
-                              : (isListening
-                                  ? loc.tr('ready_to_listen')
-                                  : 'Greta • Deutsche Sprachpartnerin')),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _isAiThinking
-                            ? const Color(0xFFA855F7)
-                            : (isSpeaking
-                                ? AppColors.cyanGlow
-                                : AppColors.textMediumEmphasis),
-                      ),
-                    ),
-                  ],
-                ),
+              // Greta Widescreen Showcase Stage (Full phone width)
+              GretaWideHeroStage(
+                state: _avatarState,
+                isListening: isListening,
+                isSpeaking: isSpeaking,
+                isThinking: _isAiThinking,
+                soundLevel: speech.soundLevel,
+                cefrLevel: context.watch<HeartsWalletService>().cefrLevel,
+                loc: loc,
+                onPlayGreeting: () {
+                  _speakTurnText(
+                      'Hallo! Ich bin Greta, deine Deutschlehrerin. Lass uns sprechen!');
+                },
               ),
 
               // Conversation Messages List
