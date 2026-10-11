@@ -1,4 +1,4 @@
-package com.wsotech.greta_ai_german
+package com.wsotech.gretaaigerman
 
 import io.flutter.embedding.android.FlutterActivity
 
