@@ -235,6 +235,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       final isSelected = wallet.cefrLevel == lvl;
                       return Expanded(
                         child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
                           onTap: () => wallet.setCefrLevel(lvl),
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
@@ -467,6 +468,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => loc.setLocale(code),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -499,6 +501,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
     return Expanded(
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () => tts.setSpeed(speed),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
