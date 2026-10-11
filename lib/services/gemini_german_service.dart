@@ -43,6 +43,21 @@ class GeminiGermanService {
     return AppConstants.defaultGeminiApiKey;
   }
 
+  /// Returns only the user-provided custom key (never exposes default private key)
+  String get customApiKey {
+    try {
+      final customKey =
+          _storage.read<String>(AppConstants.storageKeyCustomApiKey);
+      if (customKey != null && customKey.trim().isNotEmpty) {
+        return customKey.trim();
+      }
+    } catch (_) {}
+    return '';
+  }
+
+  /// Whether an active API key (custom or built-in) is available
+  bool get hasActiveKey => apiKey.trim().isNotEmpty;
+
   void setCustomApiKey(String key) {
     try {
       _storage.write(AppConstants.storageKeyCustomApiKey, key.trim());

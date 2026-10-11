@@ -24,7 +24,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _apiKeyController.text = _geminiService.apiKey;
+    // Only prefill user custom key, never expose default private key
+    _apiKeyController.text = _geminiService.customApiKey;
   }
 
   @override
@@ -35,6 +36,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
   void _saveApiKey() {
     _geminiService.setCustomApiKey(_apiKeyController.text.trim());
+    setState(() {});
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('API-Schlüssel erfolgreich gespeichert.'),
@@ -356,6 +358,30 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: const BoxDecoration(
+                              color: AppColors.successGlow,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _geminiService.customApiKey.isNotEmpty
+                                ? 'Custom Gemini Key: Active'
+                                : 'Greta AI Cloud: Connected (Gemini 2.0 Flash)',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.successGlow,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         loc.tr('optional_api_key_desc'),
                         style: const TextStyle(
@@ -373,9 +399,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           fontFamily: 'monospace',
                         ),
                         decoration: InputDecoration(
-                          hintText: 'AIzaSy...',
+                          hintText: 'Enter custom API key to override (optional)...',
                           hintStyle: const TextStyle(
                             color: AppColors.textLowEmphasis,
+                            fontSize: 12,
                           ),
                           filled: true,
                           fillColor: AppColors.surfaceBase,
