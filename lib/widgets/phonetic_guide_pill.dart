@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../core/constants/app_colors.dart';
+import '../core/localization/locale_provider.dart';
 
 class PhoneticGuidePill extends StatelessWidget {
   final String germanPhrase;
@@ -15,6 +18,8 @@ class PhoneticGuidePill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loc = context.watch<LocaleProvider>();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
@@ -36,9 +41,9 @@ class PhoneticGuidePill extends StatelessWidget {
                 color: AppColors.cyanGlow,
               ),
               const SizedBox(width: 6),
-              const Text(
-                'IPA & Aussprache',
-                style: TextStyle(
+              Text(
+                loc.tr('ipa_guide'),
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                   color: AppColors.cyanGlow,
@@ -46,26 +51,33 @@ class PhoneticGuidePill extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              Text(
-                phoneticIpa,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontFamily: 'monospace',
-                  color: AppColors.textHighEmphasis,
-                  fontWeight: FontWeight.w500,
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Text(
+                  phoneticIpa,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 13,
+                    color: AppColors.textHighEmphasis,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            phoneticBreakdown,
-            style: const TextStyle(
-              fontSize: 12,
-              fontStyle: FontStyle.italic,
-              color: AppColors.cyanSoft,
+          if (phoneticBreakdown.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: Text(
+                phoneticBreakdown,
+                style: GoogleFonts.notoSans(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: AppColors.cyanSoft,
+                ),
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

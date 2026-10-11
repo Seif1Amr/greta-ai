@@ -200,7 +200,7 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
               ),
               const SizedBox(height: 18),
               Text(
-                'Meisterschaft bewiesen!',
+                loc.tr('excellent_job'),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 20,
@@ -210,7 +210,7 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${widget.studio.getName(loc.languageCode)} • Level ${widget.levelData.levelNumber} erfolgreich gemeistert!',
+                '${widget.studio.getName(loc.languageCode)} • Level ${widget.levelData.levelNumber}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 13,
@@ -231,9 +231,9 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                   ),
                   minimumSize: const Size.fromHeight(48),
                 ),
-                child: const Text(
-                  'Zurück zum Studio',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                child: Text(
+                  loc.tr('understood'),
+                  style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
               ),
             ],
@@ -304,9 +304,13 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Grammatik-Regel im Fokus:',
-                              style: TextStyle(
+                            Text(
+                              loc.languageCode == 'ar'
+                                  ? 'القاعدة اللغوية المستهدفة:'
+                                  : (loc.languageCode == 'de'
+                                      ? 'Grammatik-Regel im Fokus:'
+                                      : 'Target Grammar Rule:'),
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.cyanGlow,
@@ -344,13 +348,17 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Text(
-                              ex.promptGerman,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textHighEmphasis,
-                                height: 1.3,
+                            child: Directionality(
+                              textDirection: TextDirection.ltr,
+                              child: Text(
+                                ex.promptGerman,
+                                textAlign: TextAlign.start,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textHighEmphasis,
+                                  height: 1.3,
+                                ),
                               ),
                             ),
                           ),
@@ -407,23 +415,23 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Sprechübung zur Festigung',
-                            style: TextStyle(
+                          Text(
+                            loc.tr('user_speech_practice'),
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: AppColors.cyanSoft,
                             ),
                           ),
                           if (_hasPassedSpeech)
-                            const Row(
+                            Row(
                               children: [
-                                Icon(Icons.check_circle_rounded,
+                                const Icon(Icons.check_circle_rounded,
                                     size: 16, color: AppColors.successGlow),
-                                SizedBox(width: 4),
+                                const SizedBox(width: 4),
                                 Text(
-                                  'Ausgezeichnet!',
-                                  style: TextStyle(
+                                  loc.tr('excellent_job'),
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.successGlow,
@@ -437,8 +445,8 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                       Text(
                         _spokenText.isEmpty
                             ? (speech.isListening
-                                ? 'Höre zu...'
-                                : 'Sprich den Satz laut und deutlich nach...')
+                                ? loc.tr('recording')
+                                : loc.tr('tap_mic_to_speak'))
                             : _spokenText,
                         style: TextStyle(
                           fontSize: 14,
@@ -450,7 +458,7 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                       if (_similarityScore > 0.0) ...[
                         const SizedBox(height: 8),
                         Text(
-                          'Aussprache: ${(_similarityScore * 100).toInt()}%',
+                          '${loc.tr('similarity_score')}: ${(_similarityScore * 100).toInt()}%',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -472,7 +480,9 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                           size: 20,
                         ),
                         label: Text(
-                          speech.isListening ? 'Auswerten' : 'Jetzt sprechen',
+                          speech.isListening
+                              ? loc.tr('validate_pronunciation')
+                              : loc.tr('tap_to_record'),
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                         style: ElevatedButton.styleFrom(
@@ -507,9 +517,9 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                           const Icon(Icons.help_outline_rounded,
                               size: 16, color: AppColors.cyanGlow),
                           const SizedBox(width: 6),
-                          const Text(
-                            'Verständnisprüfung',
-                            style: TextStyle(
+                          Text(
+                            loc.tr('grammar_check'),
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: AppColors.cyanGlow,
@@ -559,14 +569,18 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                             child: Row(
                               children: [
                                 Expanded(
-                                  child: Text(
-                                    optText,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w700
-                                          : FontWeight.w500,
-                                      color: AppColors.textHighEmphasis,
+                                  child: Directionality(
+                                    textDirection: TextDirection.ltr,
+                                    child: Text(
+                                      optText,
+                                      textAlign: TextAlign.start,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500,
+                                        color: AppColors.textHighEmphasis,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -582,8 +596,8 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                         const SizedBox(height: 6),
                         Text(
                           _isAnswerCorrect == true
-                              ? 'Richtig! Sehr gut verstanden.'
-                              : 'Nicht ganz! Schau dir die Grammatikregel oben an.',
+                              ? loc.tr('correct_answer')
+                              : loc.tr('incorrect_answer'),
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
@@ -610,8 +624,8 @@ class _GrammarLessonScreenState extends State<GrammarLessonScreen> {
                   ),
                   child: Text(
                     _currentIndex < widget.levelData.exercises.length - 1
-                        ? 'Nächste Übung'
-                        : 'Lektion abschließen',
+                        ? loc.tr('next_exercise')
+                        : loc.tr('complete_level'),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,

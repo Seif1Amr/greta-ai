@@ -64,7 +64,7 @@ class GrammarMasteryHubScreen extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Regeln & Differenzierungs-Leitfaden',
+                            loc.tr('open_rules_cheatsheet'),
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.cyanSoft,
@@ -120,9 +120,9 @@ class GrammarMasteryHubScreen extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: const Text(
-                    'Verstanden',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                  child: Text(
+                    loc.tr('understood'),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                 ),
               ],
@@ -173,7 +173,7 @@ class GrammarMasteryHubScreen extends StatelessWidget {
             side: const BorderSide(color: AppColors.borderHighlight, width: 1.2),
           ),
           title: Text(
-            'Level ${levelData.levelNumber} freischalten',
+            '${loc.tr('unlock_level')} ${levelData.levelNumber}',
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -207,7 +207,7 @@ class GrammarMasteryHubScreen extends StatelessWidget {
                       size: 16, color: AppColors.heartRed),
                   const SizedBox(width: 6),
                   Text(
-                    'Kosten: 1 Herz (Guthaben: ${wallet.hearts})',
+                    '${loc.tr('cost_heart')} (${wallet.hearts} ${loc.tr('hearts')})',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -248,9 +248,9 @@ class GrammarMasteryHubScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text(
-                  'Freischalten (1 Herz)',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                child: Text(
+                  '${loc.tr('unlock_level')} (1)',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               )
             else
@@ -260,7 +260,7 @@ class GrammarMasteryHubScreen extends StatelessWidget {
                   ActiveRecallBridgeModal.show(context);
                 },
                 icon: const Icon(Icons.bolt_rounded, size: 18),
-                label: const Text('Herzen aufladen'),
+                label: Text(loc.tr('refill_hearts')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.cyanGlow,
                   foregroundColor: AppColors.backgroundBase,
@@ -283,20 +283,20 @@ class GrammarMasteryHubScreen extends StatelessWidget {
       child: Scaffold(
         backgroundColor: AppColors.backgroundBase,
         appBar: AppBar(
-          title: const Column(
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Deutsche Kernmeisterei',
-                style: TextStyle(
+                loc.tr('grammar_hub_title'),
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w800,
                   color: AppColors.textHighEmphasis,
                 ),
               ),
               Text(
-                'Die 4 größten Hürden meistern',
-                style: TextStyle(
+                loc.tr('grammar_hub_subtitle'),
+                style: const TextStyle(
                   fontSize: 11,
                   color: AppColors.cyanSoft,
                   fontWeight: FontWeight.w600,
@@ -424,25 +424,25 @@ class GrammarMasteryHubScreen extends StatelessWidget {
                             color: AppColors.cyanGlow.withValues(alpha: 0.25),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.lightbulb_outline_rounded,
                               size: 15,
                               color: AppColors.cyanGlow,
                             ),
-                            SizedBox(width: 6),
+                            const SizedBox(width: 6),
                             Text(
-                              'Regeln & Spickzettel öffnen',
-                              style: TextStyle(
+                              loc.tr('open_rules_cheatsheet'),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: AppColors.cyanGlow,
                               ),
                             ),
-                            SizedBox(width: 4),
-                            Icon(
+                            const SizedBox(width: 4),
+                            const Icon(
                               Icons.arrow_forward_ios_rounded,
                               size: 10,
                               color: AppColors.cyanGlow,
@@ -454,9 +454,9 @@ class GrammarMasteryHubScreen extends StatelessWidget {
                     const SizedBox(height: 16),
 
                     // Levels Map
-                    const Text(
-                      'Stufen-Trainingspfad:',
-                      style: TextStyle(
+                    Text(
+                      loc.tr('training_path'),
+                      style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textLowEmphasis,

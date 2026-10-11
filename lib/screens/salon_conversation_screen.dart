@@ -376,7 +376,7 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
                       isListening
                           ? loc.tr('tap_orb_stop')
                           : (_isAiThinking
-                              ? 'Greta antwortet...'
+                              ? loc.tr('greta_thinking')
                               : loc.tr('tap_orb_speak')),
                       style: const TextStyle(
                         fontSize: 12,
@@ -449,13 +449,17 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Flexible(
-                        child: Text(
-                          msg.germanText,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: AppColors.textHighEmphasis,
-                            height: 1.35,
+                        child: Directionality(
+                          textDirection: TextDirection.ltr,
+                          child: Text(
+                            msg.germanText,
+                            textAlign: TextAlign.start,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textHighEmphasis,
+                              height: 1.35,
+                            ),
                           ),
                         ),
                       ),

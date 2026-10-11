@@ -171,7 +171,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                                     size: 14, color: AppColors.heartRed),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${wallet.hearts} Herzen',
+                                  '${wallet.hearts} ${loc.tr('hearts')}',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
@@ -183,7 +183,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                                     size: 14, color: AppColors.warning),
                                 const SizedBox(width: 4),
                                 Text(
-                                  '${wallet.streakDays} Tage Serie',
+                                  '${wallet.streakDays} ${loc.tr('streak_days')}',
                                   style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w700,
@@ -220,33 +220,48 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // CEFR Level Selector
+                // CEFR Level Selector (Responsive Single Row)
                 _buildSectionHeader(loc.tr('current_level')),
                 const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((lvl) {
-                    final isSelected = wallet.cefrLevel == lvl;
-                    return ChoiceChip(
-                      label: Text(
-                        lvl,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: isSelected
-                              ? AppColors.backgroundBase
-                              : AppColors.textHighEmphasis,
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.borderSubtle),
+                  ),
+                  child: Row(
+                    children: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((lvl) {
+                      final isSelected = wallet.cefrLevel == lvl;
+                      return Expanded(
+                        child: GestureDetector(
+                          onTap: () => wallet.setCefrLevel(lvl),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? AppColors.cyanGlow
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Center(
+                              child: Text(
+                                lvl,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                  color: isSelected
+                                      ? AppColors.backgroundBase
+                                      : AppColors.textHighEmphasis,
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                      selected: isSelected,
-                      selectedColor: AppColors.cyanGlow,
-                      backgroundColor: AppColors.surfaceElevated,
-                      onSelected: (val) {
-                        if (val) wallet.setCefrLevel(lvl);
-                      },
-                    );
-                  }).toList(),
+                      );
+                    }).toList(),
+                  ),
                 ),
                 const SizedBox(height: 20),
 
@@ -262,18 +277,18 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                   ),
                   child: Row(
                     children: [
-                      _buildSpeedChip(0.8, '0.8x (Langsam)', tts),
+                      _buildSpeedChip(0.8, loc.tr('speed_slow'), tts),
                       const SizedBox(width: 8),
-                      _buildSpeedChip(1.0, '1.0x (Normal)', tts),
+                      _buildSpeedChip(1.0, loc.tr('speed_normal'), tts),
                       const SizedBox(width: 8),
-                      _buildSpeedChip(1.2, '1.2x (Schnell)', tts),
+                      _buildSpeedChip(1.2, loc.tr('speed_fast'), tts),
                     ],
                   ),
                 ),
                 const SizedBox(height: 20),
 
                 // Hearts Refill Card
-                _buildSectionHeader('Guthaben & Werbebrücke'),
+                _buildSectionHeader(loc.tr('credits_and_ad_bridge')),
                 const SizedBox(height: 10),
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -299,9 +314,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                                 color: AppColors.textHighEmphasis,
                               ),
                             ),
-                            const Text(
-                              '+15 Herzen pro Sponsorclip',
-                              style: TextStyle(
+                            Text(
+                              loc.tr('refill_description'),
+                              style: const TextStyle(
                                 fontSize: 12,
                                 color: AppColors.textMediumEmphasis,
                               ),
@@ -320,7 +335,7 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 8),
                         ),
-                        child: const Text('Aufladen'),
+                        child: Text(loc.tr('refill')),
                       ),
                     ],
                   ),

@@ -332,13 +332,17 @@ class _LevelExerciseScreenState extends State<LevelExerciseScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Text(
-                              exercise.germanPhrase,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textHighEmphasis,
-                                height: 1.3,
+                            child: Directionality(
+                              textDirection: TextDirection.ltr,
+                              child: Text(
+                                exercise.germanPhrase,
+                                textAlign: TextAlign.start,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textHighEmphasis,
+                                  height: 1.3,
+                                ),
                               ),
                             ),
                           ),

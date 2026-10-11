@@ -227,7 +227,7 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
                     ),
                   ),
                   Text(
-                    '600 Lektionen • CEFR A1 - C2',
+                    loc.tr('curriculum_appbar_subtitle'),
                     style: const TextStyle(
                       fontSize: 11,
                       color: AppColors.cyanSoft,
@@ -408,17 +408,15 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
               },
             ),
 
-            // Sticky Right-Hand Tier Fast-Scroll Indexer
+            // Sticky Right-Hand Tier Fast-Scroll Indexer (Full vertical stretch)
             Positioned(
-              right: 8,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: FastScrollTierIndexer(
-                  tiers: GermanCurriculumCatalog.tiers,
-                  activeTier: _activeTier,
-                  onTierSelected: _jumpToTier,
-                ),
+              right: 6,
+              top: 8,
+              bottom: 12,
+              child: FastScrollTierIndexer(
+                tiers: GermanCurriculumCatalog.tiers,
+                activeTier: _activeTier,
+                onTierSelected: _jumpToTier,
               ),
             ),
           ],
@@ -487,44 +485,17 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          loc.languageCode == 'ar'
-                              ? 'استوديوهات القواعد الصعبة'
-                              : (loc.languageCode == 'de'
-                                  ? 'Deutsche Grammatik-Studios'
-                                  : 'German Grammar Mastery'),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.textHighEmphasis,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.heartRed.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'PRO',
-                            style: TextStyle(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.heartRed,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      loc.tr('grammar_studios_title'),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textHighEmphasis,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      loc.languageCode == 'ar'
-                          ? 'der/die/das • 4 حالات الإعراب • الأفعال المنفصلة • تركيب الجملة'
-                          : 'der/die/das • 4 Fälle • Trennbare Verben • Satzbau',
+                      loc.tr('grammar_studios_subtitle'),
                       style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.cyanSoft,
@@ -547,7 +518,7 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
                   ),
                 ),
                 child: Text(
-                  loc.languageCode == 'ar' ? 'ابدأ' : 'Öffnen',
+                  loc.tr('open'),
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,

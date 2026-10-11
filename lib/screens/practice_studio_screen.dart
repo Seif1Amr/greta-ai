@@ -305,11 +305,7 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                                 Row(
                                   children: [
                                     Text(
-                                      loc.languageCode == 'ar'
-                                          ? 'استوديوهات القواعد المتقدمة'
-                                          : (loc.languageCode == 'de'
-                                              ? 'Grammatik-Meisterstudios'
-                                              : 'Grammar Mastery Studios'),
+                                      loc.tr('grammar_studios_title'),
                                       style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w800,
@@ -325,9 +321,9 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                                             .withValues(alpha: 0.2),
                                         borderRadius: BorderRadius.circular(6),
                                       ),
-                                      child: const Text(
-                                        '4 STUDIOS',
-                                        style: TextStyle(
+                                      child: Text(
+                                        loc.tr('studios_count_badge'),
+                                        style: const TextStyle(
                                           fontSize: 9,
                                           fontWeight: FontWeight.w900,
                                           color: AppColors.cyanGlow,
@@ -338,9 +334,7 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                                 ),
                                 const SizedBox(height: 3),
                                 Text(
-                                  loc.languageCode == 'ar'
-                                      ? 'der/die/das • 4 حالات • أفعال منفصلة • Satzbau'
-                                      : 'der/die/das • 4 Fälle • Verben • Kausalsätze',
+                                  loc.tr('grammar_studios_subtitle'),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textMediumEmphasis,
@@ -365,9 +359,9 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Aussprache-Studio',
-                      style: TextStyle(
+                    Text(
+                      loc.tr('pronunciation_studio'),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: AppColors.textHighEmphasis,
@@ -377,9 +371,9 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                       onPressed: _nextPhrase,
                       icon: const Icon(Icons.shuffle_rounded,
                           size: 16, color: AppColors.cyanGlow),
-                      label: const Text(
-                        'Nächster Satz',
-                        style: TextStyle(
+                      label: Text(
+                        loc.tr('next_phrase'),
+                        style: const TextStyle(
                           color: AppColors.cyanGlow,
                           fontWeight: FontWeight.w700,
                         ),
@@ -404,13 +398,17 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
-                            child: Text(
-                              _currentPhrase.germanText,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.textHighEmphasis,
-                                height: 1.3,
+                            child: Directionality(
+                              textDirection: TextDirection.ltr,
+                              child: Text(
+                                _currentPhrase.germanText,
+                                textAlign: TextAlign.start,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textHighEmphasis,
+                                  height: 1.3,
+                                ),
                               ),
                             ),
                           ),
@@ -462,7 +460,7 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                         _spokenText.isEmpty
                             ? (speech.isListening
                                 ? loc.tr('recording')
-                                : 'Tippe auf das Mikrofon und sprich...')
+                                : loc.tr('tap_mic_to_speak'))
                             : _spokenText,
                         style: TextStyle(
                           fontSize: 14,
@@ -496,7 +494,7 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
                         ),
                         label: Text(
                           speech.isListening
-                              ? 'Auswerten'
+                              ? loc.tr('validate_pronunciation')
                               : loc.tr('tap_to_record'),
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
