@@ -38,15 +38,31 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
   @override
   void initState() {
     super.initState();
-    _messages.add(
+    _messages.addAll([
       ConversationTurn(
         id: 'welcome_0',
         germanText:
             'Hallo! Ich bin Greta, deine Deutschlehrerin. Worüber möchtest du heute sprechen?',
         isUser: false,
-        timestamp: DateTime.now(),
+        timestamp: DateTime.now().subtract(const Duration(seconds: 40)),
       ),
-    );
+      ConversationTurn(
+        id: 'sample_user_1',
+        germanText:
+            'Ich möchte mein Vorstellungsgespräch für einen Job in Berlin üben!',
+        isUser: true,
+        timestamp: DateTime.now().subtract(const Duration(seconds: 25)),
+      ),
+      ConversationTurn(
+        id: 'sample_ai_1',
+        germanText:
+            'Ausgezeichnet! Lass uns anfangen. Erzähl mir zuerst: Was sind deine größten beruflichen Stärken?',
+        isUser: false,
+        timestamp: DateTime.now().subtract(const Duration(seconds: 10)),
+        correction:
+            'Tipp: "Ich bewerbe mich um eine Stelle als..." klingt besonders professionell.',
+      ),
+    ]);
   }
 
   @override
@@ -301,17 +317,22 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
             // 1. Immersive Edge-to-Edge Greta Hero Stage (Unboxed, bigger, overlaid title and hearts)
             _buildImmersiveGretaStage(loc, isListening, isSpeaking),
 
-            // 2. Conversation Messages List (Maximized middle space)
+            // 2. Conversation Messages List (Maximized middle space, responsive tablet width)
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final msg = _messages[index];
-                  return _buildMessageBubble(msg, loc);
-                },
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 720),
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = _messages[index];
+                      return _buildMessageBubble(msg, loc);
+                    },
+                  ),
+                ),
               ),
             ),
 
@@ -325,39 +346,92 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
 
   Widget _buildImmersiveGretaStage(
       LocaleProvider loc, bool isListening, bool isSpeaking) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isTablet = screenWidth >= 600;
+    final stageHeight = isTablet ? 340.0 : 260.0;
+
     return SizedBox(
       width: double.infinity,
-      height: 260,
+      height: stageHeight,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Background Greta Portrait - Extended edge-to-edge, unboxed!
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            transitionBuilder: (child, animation) {
-              return FadeTransition(opacity: animation, child: child);
-            },
-            child: Image.asset(
-              _avatarAssetPath,
-              key: ValueKey<String>(_avatarAssetPath),
-              width: double.infinity,
-              height: double.infinity,
-              fit: BoxFit.cover,
-              alignment: const Alignment(0.0, -0.15),
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  color: AppColors.surfaceElevated,
-                  child: const Center(
-                    child: Icon(
-                      Icons.person_rounded,
-                      size: 80,
-                      color: AppColors.cyanGlow,
-                    ),
-                  ),
-                );
-              },
+          // Background Greta Portrait - Extended edge-to-edge on mobile, elegantly centered on tablet
+          Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: isTablet ? 640 : double.infinity,
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                child: Image.asset(
+                  _avatarAssetPath,
+                  key: ValueKey<String>(_avatarAssetPath),
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.cover,
+                  alignment: const Alignment(0.0, -0.15),
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: AppColors.surfaceElevated,
+                      child: const Center(
+                        child: Icon(
+                          Icons.person_rounded,
+                          size: 80,
+                          color: AppColors.cyanGlow,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
+
+          // Lateral soft gradient vignettes for wide/tablet displays
+          if (isTablet) ...[
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 80,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      AppColors.backgroundBase,
+                      AppColors.backgroundBase.withValues(alpha: 0.6),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 80,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.centerRight,
+                    end: Alignment.centerLeft,
+                    colors: [
+                      AppColors.backgroundBase,
+                      AppColors.backgroundBase.withValues(alpha: 0.6),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
 
           // Top subtle gradient scrim for status/controls legibility
           Positioned(
@@ -385,7 +459,7 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            height: 110,
+            height: isTablet ? 130 : 110,
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -403,109 +477,115 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
             ),
           ),
 
-          // Floating Top Controls (Inside SafeArea, in top corners so face is 100% CLEAR)
+          // Floating Top Controls (Inside SafeArea, in top corners so face is 100% CLEAR, centered on tablet)
           SafeArea(
             bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Top-Left: "Greta Voice Salon" Title & clean online dot (No Gemini badge!)
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        loc.tr('salon_title'),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: 0.3,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black,
-                              blurRadius: 10,
+                      // Top-Left: "Greta Voice Salon" Title & clean online dot (No Gemini badge!)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            loc.tr('salon_title'),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
+                              letterSpacing: 0.3,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black,
+                                  blurRadius: 10,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.successGlow,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 5),
+                              const Text(
+                                'Online',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.cyanSoft,
+                                  fontWeight: FontWeight.w600,
+                                  shadows: [
+                                    Shadow(color: Colors.black, blurRadius: 6),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
+
+                      // Top-Right: Hearts CreditBadge & Reset button
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          const CreditBadge(),
+                          const SizedBox(width: 6),
                           Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: AppColors.successGlow,
+                            width: 36,
+                            height: 36,
+                            decoration: BoxDecoration(
+                              color: AppColors.backgroundBase
+                                  .withValues(alpha: 0.65),
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: AppColors.borderHighlight
+                                    .withValues(alpha: 0.6),
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 5),
-                          const Text(
-                            'Online',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppColors.cyanSoft,
-                              fontWeight: FontWeight.w600,
-                              shadows: [
-                                Shadow(color: Colors.black, blurRadius: 6),
-                              ],
+                            child: IconButton(
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(
+                                Icons.refresh_rounded,
+                                size: 19,
+                                color: AppColors.textMediumEmphasis,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _messages.clear();
+                                  _messages.add(
+                                    ConversationTurn(
+                                      id: 'welcome_reset',
+                                      germanText:
+                                          'Hallo! Wie kann ich dir heute beim Deutschlernen helfen?',
+                                      isUser: false,
+                                      timestamp: DateTime.now(),
+                                    ),
+                                  );
+                                });
+                              },
                             ),
                           ),
                         ],
                       ),
                     ],
                   ),
-
-                  // Top-Right: Hearts CreditBadge & Reset button
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const CreditBadge(),
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color:
-                              AppColors.backgroundBase.withValues(alpha: 0.65),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color:
-                                AppColors.borderHighlight.withValues(alpha: 0.6),
-                            width: 1,
-                          ),
-                        ),
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
-                          icon: const Icon(
-                            Icons.refresh_rounded,
-                            size: 19,
-                            color: AppColors.textMediumEmphasis,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _messages.clear();
-                              _messages.add(
-                                ConversationTurn(
-                                  id: 'welcome_reset',
-                                  germanText:
-                                      'Hallo! Wie kann ich dir heute beim Deutschlernen helfen?',
-                                  isUser: false,
-                                  timestamp: DateTime.now(),
-                                ),
-                              );
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -515,7 +595,12 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
             left: 16,
             right: 16,
             bottom: 8,
-            child: _buildStageBottomSubtitle(loc, isListening, isSpeaking),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: _buildStageBottomSubtitle(loc, isListening, isSpeaking),
+              ),
+            ),
           ),
         ],
       ),
@@ -673,56 +758,62 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
           top: BorderSide(color: AppColors.borderHighlight, width: 0.8),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isListening && speech.currentWords.isNotEmpty) ...[
-            Container(
-              margin: const EdgeInsets.only(bottom: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceElevated,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.cyanGlow.withValues(alpha: 0.4),
-                  width: 0.8,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (isListening && speech.currentWords.isNotEmpty) ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.cyanGlow.withValues(alpha: 0.4),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Text(
+                    speech.currentWords,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.cyanSoft,
+                    ),
+                  ),
                 ),
+              ],
+              GlowingVoiceOrb(
+                isListening: isListening,
+                isSpeaking: isSpeaking,
+                isThinking: _isAiThinking,
+                soundLevel: speech.soundLevel,
+                size: 48,
+                onTap: _handleOrbTap,
               ),
-              child: Text(
-                speech.currentWords,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 3),
+              Text(
+                isListening
+                    ? loc.tr('tap_orb_stop')
+                    : (_isAiThinking
+                        ? loc.tr('greta_thinking')
+                        : loc.tr('tap_orb_speak')),
                 style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.cyanSoft,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textMediumEmphasis,
                 ),
               ),
-            ),
-          ],
-          GlowingVoiceOrb(
-            isListening: isListening,
-            isSpeaking: isSpeaking,
-            isThinking: _isAiThinking,
-            soundLevel: speech.soundLevel,
-            size: 48,
-            onTap: _handleOrbTap,
+            ],
           ),
-          const SizedBox(height: 3),
-          Text(
-            isListening
-                ? loc.tr('tap_orb_stop')
-                : (_isAiThinking
-                    ? loc.tr('greta_thinking')
-                    : loc.tr('tap_orb_speak')),
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textMediumEmphasis,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

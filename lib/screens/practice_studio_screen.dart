@@ -131,11 +131,15 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
           ],
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                 // Quick Stats Banner
                 Container(
                   padding: const EdgeInsets.all(16),
@@ -518,7 +522,9 @@ class _PracticeStudioScreenState extends State<PracticeStudioScreen> {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildStatItem(

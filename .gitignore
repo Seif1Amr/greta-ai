@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local scratch / test assets
+node_modules/
+tool/node_modules/
+*.apk
+live_*.png
+tablet_chrome.png

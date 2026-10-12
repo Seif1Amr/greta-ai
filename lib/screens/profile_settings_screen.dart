@@ -125,11 +125,15 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ],
         ),
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
                 // Profile Header Card
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -475,7 +479,9 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           ),
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildSectionHeader(String title) {

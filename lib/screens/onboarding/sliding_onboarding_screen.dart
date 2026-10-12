@@ -150,23 +150,28 @@ class _SlidingOnboardingScreenState extends State<SlidingOnboardingScreen> {
           ],
         ),
         body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: (index) {
-                    setState(() => _currentPage = index);
-                  },
-                  children: [
-                    _buildSlide1Motivation(loc),
-                    _buildSlide2Proficiency(loc),
-                    _buildSlide3HabitAndGreeting(loc),
-                  ],
-                ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: (index) {
+                        setState(() => _currentPage = index);
+                      },
+                      children: [
+                        _buildSlide1Motivation(loc),
+                        _buildSlide2Proficiency(loc),
+                        _buildSlide3HabitAndGreeting(loc),
+                      ],
+                    ),
+                  ),
+                  _buildBottomControls(loc),
+                ],
               ),
-              _buildBottomControls(loc),
-            ],
+            ),
           ),
         ),
       ),

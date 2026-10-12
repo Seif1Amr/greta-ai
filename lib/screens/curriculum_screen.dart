@@ -243,9 +243,12 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
             SizedBox(width: 14),
           ],
         ),
-        body: Column(
-          children: [
-            // Grammar Mastery Studios Access Banner
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Column(
+              children: [
+                // Grammar Mastery Studios Access Banner
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: _buildGrammarStudiosBanner(context, loc),
@@ -422,11 +425,13 @@ class _CurriculumScreenState extends State<CurriculumScreen> {
           ],
         ),
       ),
-    ],
-  ),
-),
-);
-  }
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
 
   Widget _buildGrammarStudiosBanner(BuildContext context, LocaleProvider loc) {
     return Material(
