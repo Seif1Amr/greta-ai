@@ -432,7 +432,7 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
   Widget _buildCleanGretaPortrait() {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isTablet = screenWidth >= 600;
-    final stageHeight = isTablet ? 250.0 : 190.0;
+    final stageHeight = isTablet ? 360.0 : 275.0;
 
     return Center(
       child: ConstrainedBox(
@@ -445,7 +445,7 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Greta's Clean, Unobstructed Avatar
+              // Greta's Clean, Unobstructed Avatar - full face & forehead visible
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 transitionBuilder: (child, animation) {
@@ -457,7 +457,7 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
-                  alignment: const Alignment(0.0, -0.25),
+                  alignment: Alignment.topCenter,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: AppColors.surfaceElevated,
