@@ -10,7 +10,6 @@ import '../services/german_tts_service.dart';
 import '../services/hearts_wallet_service.dart';
 import '../widgets/animated_greta_avatar.dart';
 import '../widgets/credit_badge.dart';
-import '../widgets/glowing_voice_orb.dart';
 import '../widgets/refill_hearts_modal.dart';
 
 class SalonConversationScreen extends StatefulWidget {
@@ -24,6 +23,7 @@ class SalonConversationScreen extends StatefulWidget {
 class _SalonConversationScreenState extends State<SalonConversationScreen> {
   final List<ConversationTurn> _messages = [];
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _textController = TextEditingController();
   final GeminiGermanService _geminiService = GeminiGermanService();
 
   bool _isAiThinking = false;
@@ -38,6 +38,7 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
   @override
   void initState() {
     super.initState();
+    _textController.addListener(() => setState(() {}));
     _messages.addAll([
       ConversationTurn(
         id: 'welcome_0',
@@ -78,6 +79,7 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
       _ttsService?.stop();
       _speechService?.cancelListening();
     } catch (_) {}
+    _textController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -92,6 +94,13 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
         );
       }
     });
+  }
+
+  void _submitTextTurn() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
+    _textController.clear();
+    _submitUserTurn(text);
   }
 
   Future<void> _handleOrbTap() async {
@@ -312,10 +321,11 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
       textDirection: loc.textDirection,
       child: Scaffold(
         backgroundColor: AppColors.backgroundBase,
+        appBar: _buildTopHeader(loc),
         body: Column(
           children: [
-            // 1. Immersive Edge-to-Edge Greta Hero Stage (Unboxed, bigger, overlaid title and hearts)
-            _buildImmersiveGretaStage(loc, isListening, isSpeaking),
+            // 1. Clean, Unobstructed Greta Avatar Portrait (Zero text overlays, zero cards)
+            _buildCleanGretaPortrait(),
 
             // 2. Conversation Messages List (Maximized middle space, responsive tablet width)
             Expanded(
@@ -336,33 +346,107 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
               ),
             ),
 
-            // 3. Ultra-Compact Bottom Voice Interaction Stage (Minimal height)
-            _buildCompactVoiceOrbStage(loc, speech, isListening, isSpeaking),
+            // 3. Ultra-Slim WhatsApp-Style Bottom Bar (< 10% height)
+            _buildWhatsAppStyleInputBar(loc, speech, isListening, isSpeaking),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildImmersiveGretaStage(
-      LocaleProvider loc, bool isListening, bool isSpeaking) {
+  PreferredSizeWidget _buildTopHeader(LocaleProvider loc) {
+    return AppBar(
+      backgroundColor: AppColors.surfaceBase,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            loc.tr('salon_title'),
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: 0.2,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            width: 7,
+            height: 7,
+            decoration: const BoxDecoration(
+              color: AppColors.successGlow,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 5),
+          const Text(
+            'Online',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.cyanSoft,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        const CreditBadge(),
+        const SizedBox(width: 4),
+        IconButton(
+          tooltip: 'Reset conversation',
+          icon: const Icon(
+            Icons.refresh_rounded,
+            size: 20,
+            color: AppColors.textMediumEmphasis,
+          ),
+          onPressed: () {
+            setState(() {
+              _messages.clear();
+              _messages.add(
+                ConversationTurn(
+                  id: 'welcome_reset',
+                  germanText:
+                      'Hallo! Wie kann ich dir heute beim Deutschlernen helfen?',
+                  isUser: false,
+                  timestamp: DateTime.now(),
+                ),
+              );
+            });
+          },
+        ),
+        const SizedBox(width: 8),
+      ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          color: AppColors.borderHighlight,
+          height: 1,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCleanGretaPortrait() {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isTablet = screenWidth >= 600;
-    final stageHeight = isTablet ? 340.0 : 260.0;
+    final stageHeight = isTablet ? 250.0 : 190.0;
 
-    return SizedBox(
-      width: double.infinity,
-      height: stageHeight,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Background Greta Portrait - Extended edge-to-edge on mobile, elegantly centered on tablet
-          Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: isTablet ? 640 : double.infinity,
-              ),
-              child: AnimatedSwitcher(
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: isTablet ? 600 : double.infinity,
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          height: stageHeight,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Greta's Clean, Unobstructed Avatar
+              AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
                 transitionBuilder: (child, animation) {
                   return FadeTransition(opacity: animation, child: child);
@@ -373,14 +457,14 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
                   width: double.infinity,
                   height: double.infinity,
                   fit: BoxFit.cover,
-                  alignment: const Alignment(0.0, -0.15),
+                  alignment: const Alignment(0.0, -0.25),
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
                       color: AppColors.surfaceElevated,
                       child: const Center(
                         child: Icon(
                           Icons.person_rounded,
-                          size: 80,
+                          size: 72,
                           color: AppColors.cyanGlow,
                         ),
                       ),
@@ -388,430 +472,251 @@ class _SalonConversationScreenState extends State<SalonConversationScreen> {
                   },
                 ),
               ),
-            ),
-          ),
 
-          // Lateral soft gradient vignettes for wide/tablet displays
-          if (isTablet) ...[
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 80,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                    colors: [
-                      AppColors.backgroundBase,
-                      AppColors.backgroundBase.withValues(alpha: 0.6),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: 80,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.centerRight,
-                    end: Alignment.centerLeft,
-                    colors: [
-                      AppColors.backgroundBase,
-                      AppColors.backgroundBase.withValues(alpha: 0.6),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-
-          // Top subtle gradient scrim for status/controls legibility
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 95,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.72),
-                    Colors.black.withValues(alpha: 0.35),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom smooth gradient fade blending Greta's body into the black background
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: isTablet ? 130 : 110,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    AppColors.backgroundBase.withValues(alpha: 0.5),
-                    AppColors.backgroundBase.withValues(alpha: 0.9),
-                    AppColors.backgroundBase,
-                  ],
-                  stops: const [0.0, 0.45, 0.8, 1.0],
-                ),
-              ),
-            ),
-          ),
-
-          // Floating Top Controls (Inside SafeArea, in top corners so face is 100% CLEAR, centered on tablet)
-          SafeArea(
-            bottom: false,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 720),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Top-Left: "Greta Voice Salon" Title & clean online dot (No Gemini badge!)
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            loc.tr('salon_title'),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 0.3,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black,
-                                  blurRadius: 10,
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 6,
-                                height: 6,
-                                decoration: const BoxDecoration(
-                                  color: AppColors.successGlow,
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 5),
-                              const Text(
-                                'Online',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: AppColors.cyanSoft,
-                                  fontWeight: FontWeight.w600,
-                                  shadows: [
-                                    Shadow(color: Colors.black, blurRadius: 6),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-
-                      // Top-Right: Hearts CreditBadge & Reset button
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const CreditBadge(),
-                          const SizedBox(width: 6),
-                          Container(
-                            width: 36,
-                            height: 36,
-                            decoration: BoxDecoration(
-                              color: AppColors.backgroundBase
-                                  .withValues(alpha: 0.65),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.borderHighlight
-                                    .withValues(alpha: 0.6),
-                                width: 1,
-                              ),
-                            ),
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              icon: const Icon(
-                                Icons.refresh_rounded,
-                                size: 19,
-                                color: AppColors.textMediumEmphasis,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _messages.clear();
-                                  _messages.add(
-                                    ConversationTurn(
-                                      id: 'welcome_reset',
-                                      germanText:
-                                          'Hallo! Wie kann ich dir heute beim Deutschlernen helfen?',
-                                      isUser: false,
-                                      timestamp: DateTime.now(),
-                                    ),
-                                  );
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom Dynamic State Indicator (Clean, positioned at bottom over the fade)
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 8,
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 720),
-                child: _buildStageBottomSubtitle(loc, isListening, isSpeaking),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStageBottomSubtitle(
-      LocaleProvider loc, bool isListening, bool isSpeaking) {
-    if (_isAiThinking) {
-      return Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundBase.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: const Color(0xFFA855F7).withValues(alpha: 0.6),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.auto_awesome_rounded,
-                  size: 13, color: Color(0xFFA855F7)),
-              const SizedBox(width: 6),
-              Text(
-                loc.tr('greta_thinking'),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFC084FC),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (isSpeaking) {
-      return Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundBase.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.cyanGlow.withValues(alpha: 0.6),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.volume_up_rounded,
-                  size: 14, color: AppColors.cyanGlow),
-              const SizedBox(width: 6),
-              Text(
-                loc.tr('greta_speaking'),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cyanGlow,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (isListening) {
-      return Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundBase.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: AppColors.cyanSoft.withValues(alpha: 0.6),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.graphic_eq_rounded,
-                  size: 14, color: AppColors.cyanSoft),
-              const SizedBox(width: 6),
-              Text(
-                loc.tr('ready_to_listen'),
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cyanSoft,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // Default neutral state: clean subtle tap to greet on right
-    return Align(
-      alignment: Alignment.centerRight,
-      child: GestureDetector(
-        onTap: () {
-          _speakTurnText(
-              'Hallo! Ich bin Greta, deine Deutschlehrerin. Lass uns sprechen!');
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundBase.withValues(alpha: 0.7),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: AppColors.cyanGlow.withValues(alpha: 0.4),
-              width: 0.8,
-            ),
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.volume_up_rounded,
-                  size: 13, color: AppColors.cyanGlow),
-              SizedBox(width: 4),
-              Text(
-                'Hallo',
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.cyanGlow,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCompactVoiceOrbStage(
-      LocaleProvider loc,
-      GermanSpeechService speech,
-      bool isListening,
-      bool isSpeaking) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceBase.withValues(alpha: 0.95),
-        border: const Border(
-          top: BorderSide(color: AppColors.borderHighlight, width: 0.8),
-        ),
-      ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (isListening && speech.currentWords.isNotEmpty) ...[
-                Container(
-                  margin: const EdgeInsets.only(bottom: 4),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+              // Soft Bottom Gradient Fade into chat background (Zero text, zero buttons over Greta!)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                height: 50,
+                child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceElevated,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.cyanGlow.withValues(alpha: 0.4),
-                      width: 0.8,
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        AppColors.backgroundBase.withValues(alpha: 0.6),
+                        AppColors.backgroundBase,
+                      ],
                     ),
                   ),
-                  child: Text(
-                    speech.currentWords,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.cyanSoft,
+                ),
+              ),
+
+              // Lateral vignettes for tablets
+              if (isTablet) ...[
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 50,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          AppColors.backgroundBase,
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: 50,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerRight,
+                        end: Alignment.centerLeft,
+                        colors: [
+                          AppColors.backgroundBase,
+                          Colors.transparent,
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ],
-              GlowingVoiceOrb(
-                isListening: isListening,
-                isSpeaking: isSpeaking,
-                isThinking: _isAiThinking,
-                soundLevel: speech.soundLevel,
-                size: 48,
-                onTap: _handleOrbTap,
-              ),
-              const SizedBox(height: 3),
-              Text(
-                isListening
-                    ? loc.tr('tap_orb_stop')
-                    : (_isAiThinking
-                        ? loc.tr('greta_thinking')
-                        : loc.tr('tap_orb_speak')),
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors.textMediumEmphasis,
-                ),
-              ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWhatsAppStyleInputBar(
+      LocaleProvider loc,
+      GermanSpeechService speech,
+      bool isListening,
+      bool isSpeaking) {
+    final hasText = _textController.text.trim().isNotEmpty;
+
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: AppColors.surfaceBase,
+        border: Border(
+          top: BorderSide(color: AppColors.borderHighlight, width: 1.0),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 720),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: isListening
+                  // Active Speech Recording Pill (WhatsApp Voice Note style)
+                  ? Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceElevated,
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: AppColors.cyanGlow.withValues(alpha: 0.6),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 10,
+                            height: 10,
+                            decoration: const BoxDecoration(
+                              color: AppColors.error,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          const Icon(
+                            Icons.graphic_eq_rounded,
+                            size: 18,
+                            color: AppColors.cyanGlow,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              speech.currentWords.isNotEmpty
+                                  ? speech.currentWords
+                                  : loc.tr('ready_to_listen'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.cyanSoft,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: _handleOrbTap,
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: const BoxDecoration(
+                                color: AppColors.cyanGlow,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.stop_rounded,
+                                size: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  // Normal State: Slim Text Field + Compact Mic/Send Button (< 10% screen height)
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // WhatsApp-style Pill Input Field
+                        Expanded(
+                          child: Container(
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceElevated,
+                              borderRadius: BorderRadius.circular(22),
+                              border: Border.all(
+                                color: AppColors.borderHighlight,
+                                width: 1.0,
+                              ),
+                            ),
+                            child: TextField(
+                              controller: _textController,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              cursorColor: AppColors.cyanGlow,
+                              textInputAction: TextInputAction.send,
+                              onSubmitted: (_) => _submitTextTurn(),
+                              decoration: const InputDecoration(
+                                hintText: 'Nachricht eingeben...',
+                                hintStyle: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.textLowEmphasis,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 11,
+                                ),
+                                border: InputBorder.none,
+                                isDense: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+
+                        // WhatsApp-style Action Circle (44x44 dp)
+                        GestureDetector(
+                          onTap: _isAiThinking
+                              ? null
+                              : (hasText ? _submitTextTurn : _handleOrbTap),
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: _isAiThinking
+                                  ? AppColors.surfaceElevated
+                                  : AppColors.cyanGlow,
+                              shape: BoxShape.circle,
+                              boxShadow: _isAiThinking
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: AppColors.cyanGlow
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                            ),
+                            child: Center(
+                              child: _isAiThinking
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppColors.cyanSoft,
+                                      ),
+                                    )
+                                  : Icon(
+                                      hasText
+                                          ? Icons.send_rounded
+                                          : Icons.mic_rounded,
+                                      size: 21,
+                                      color: Colors.black,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ),
